@@ -1,0 +1,23 @@
+
+OAK & IRON FURNITURE - ADMIN SETUP GUIDE
+========================================
+
+Since this is a production-ready app, there is no public "Register as Admin" 
+button to prevent unauthorized access.
+
+HOW TO CREATE AN ADMIN:
+-----------------------
+1. Open the website in your browser.
+2. Go to the "Register" page and create a new account with your email.
+3. Go to the Firebase Console: https://console.firebase.google.com/
+4. Navigate to "Firestore Database" -> "Data" tab.
+5. Look for the "users" collection.
+6. Find the document corresponding to the email you just registered.
+7. Click the "role" field and change its value from "customer" to "admin".
+8. Refresh your website.
+
+WHAT HAPPENS NEXT:
+------------------
+- A "Dashboard" (Layout icon) will appear in the top Navbar next to your profile.
+- You will have full access to the /admin route.
+- You can now add, edit, and delete products and view customer orders.
