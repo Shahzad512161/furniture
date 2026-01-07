@@ -1,0 +1,44 @@
+
+# ==========================================
+# FIREBASE CLOUD FIRESTORE SECURITY RULES
+# ==========================================
+# 1. Go to: https://console.firebase.google.com/
+# 2. Select your project "furniture-ae0f2"
+# 3. Click "Firestore Database" in the left menu
+# 4. Click the "Rules" tab
+# 5. Delete everything and PASTE the code below
+# 6. Click "Publish"
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Products: Anyone (even logged out) can read. Only Admins can write.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Users: Users can read and update their own document.
+    // Allow creation for any logged-in user (needed during registration).
+    match /users/{userId} {
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow read, update: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Orders: 
+    // - Any logged-in user can create an order.
+    // - Users can read only their own orders.
+    // - Admins can read/update all orders.
+    match /orders/{orderId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.userId || 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+      allow update: if request.auth != null && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+  }
+}
