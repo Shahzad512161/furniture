@@ -16,20 +16,23 @@ const Register: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(false);
-    setError(null);
     setLoading(true);
+    setError(null);
     
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
       
+      // Check if email starts with 'admin' to assign role
+      const isAdminEmail = email.toLowerCase().startsWith('admin');
+      const assignedRole = isAdminEmail ? 'admin' : 'customer';
+
       try {
         // Initialize profile in Firestore
         await setDoc(doc(db, 'users', user.uid), {
           uid: user.uid,
           email,
           fullName,
-          role: 'customer',
+          role: assignedRole,
           createdAt: Date.now()
         });
         navigate('/');
@@ -86,10 +89,11 @@ const Register: React.FC = () => {
               required
               type="email"
               className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
-              placeholder="you@example.com"
+              placeholder="admin@oakandiron.co.uk"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <p className="text-[10px] text-slate-400 italic">Emails starting with "admin" get automatic Admin Dashboard access.</p>
           </div>
 
           <div className="space-y-2">

@@ -51,11 +51,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (currentUser) await fetchProfile(currentUser.uid);
   };
 
+  // Derive admin status from both Firestore role AND email prefix
+  const isEmailAdmin = currentUser?.email?.toLowerCase().startsWith('admin') || false;
+  const isRoleAdmin = userProfile?.role === 'admin';
+
   const value = {
     currentUser,
     userProfile,
     loading,
-    isAdmin: userProfile?.role === 'admin',
+    isAdmin: isEmailAdmin || isRoleAdmin,
     refreshProfile
   };
 
