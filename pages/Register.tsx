@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase/config';
-import { UserPlus, Mail, Lock, User, ArrowRight, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { UserPlus, Mail, Lock, User, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,7 +13,9 @@ const Register: React.FC = () => {
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
   const navigate = useNavigate();
+  const { refreshProfile } = useAuth();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,31 +23,47 @@ const Register: React.FC = () => {
     setError(null);
     
     try {
-      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      // 1. Create User in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       
-      // Check if email starts with 'admin' to assign role
+      if (!user) throw new Error("User creation failed in Authentication.");
+
+      // 2. Determine Role
       const isAdminEmail = email.toLowerCase().startsWith('admin');
       const assignedRole = isAdminEmail ? 'admin' : 'customer';
 
+      // 3. Create User Document in Firestore
+      const userDocData = {
+        uid: user.uid,
+        email: email.toLowerCase(),
+        fullName: fullName.trim(),
+        role: assignedRole,
+        createdAt: Date.now(),
+        phone: '',
+        address: '',
+        city: '',
+        postalCode: ''
+      };
+
       try {
-        // Initialize profile in Firestore
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          email,
-          fullName,
-          role: assignedRole,
-          createdAt: Date.now()
-        });
-        navigate('/');
-      } catch (fsErr: any) {
-        console.error("Firestore user creation failed:", fsErr);
-        if (fsErr.code === 'permission-denied') {
-          setError("Account created, but database access was denied. Please check Firestore security rules.");
-        } else {
-          setError("Account created, but profile setup failed. You may need to log in again.");
+        await setDoc(doc(db, 'users', user.uid), userDocData);
+        
+        // 4. Verify Document Existence immediately
+        const verifyDoc = await getDoc(doc(db, 'users', user.uid));
+        if (!verifyDoc.exists()) {
+          throw new Error("Firestore document write confirmed but verification failed. Please try syncing from your profile.");
         }
+
+        // 5. Update Context and Navigate
+        await refreshProfile();
+        navigate(assignedRole === 'admin' ? '/admin' : '/');
+      } catch (fsErr: any) {
+        console.error("Firestore error:", fsErr);
+        setError(`Auth successful, but profile creation failed: ${fsErr.message}. You may need to manually sync your profile from the dashboard.`);
       }
     } catch (authErr: any) {
+      console.error("Auth error:", authErr);
       setError(authErr.message || "Registration failed. Please check your details.");
     } finally {
       setLoading(false);
@@ -55,14 +74,14 @@ const Register: React.FC = () => {
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700 w-full max-w-md space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-extrabold">Join Oak & Iron</h1>
-          <p className="text-slate-500">Start your premium furniture journey</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Create Account</h1>
+          <p className="text-slate-500">Join the Oak & Iron community</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-start gap-3 text-red-800 text-sm">
+          <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 p-4 rounded-xl flex items-start gap-3 text-red-800 dark:text-red-400 text-sm">
             <AlertCircle className="shrink-0 mt-0.5" size={18} />
-            <p>{error}</p>
+            <p className="font-medium">{error}</p>
           </div>
         )}
 
@@ -74,10 +93,11 @@ const Register: React.FC = () => {
             <input
               required
               type="text"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
               placeholder="John Doe"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
+              disabled={loading}
             />
           </div>
 
@@ -88,12 +108,13 @@ const Register: React.FC = () => {
             <input
               required
               type="email"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
-              placeholder="admin@oakandiron.co.uk"
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
+              placeholder="admin@example.co.uk"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
             />
-            <p className="text-[10px] text-slate-400 italic">Emails starting with "admin" get automatic Admin Dashboard access.</p>
+            <p className="text-[10px] text-slate-400 italic">Emails starting with "admin" get automatic Admin Access.</p>
           </div>
 
           <div className="space-y-2">
@@ -103,22 +124,33 @@ const Register: React.FC = () => {
             <input
               required
               type="password"
-              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none"
+              minLength={6}
+              className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 outline-none transition-all"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
             />
           </div>
 
           <button
             disabled={loading}
-            className="w-full bg-slate-900 dark:bg-amber-600 text-white py-4 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-amber-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-slate-900 dark:bg-amber-600 text-white py-4 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-amber-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-slate-200 dark:shadow-none"
           >
-            {loading ? 'Creating Account...' : 'Sign Up Now'} <ArrowRight size={18} />
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                Securing Profile...
+              </>
+            ) : (
+              <>
+                Create Account <ArrowRight size={18} />
+              </>
+            )}
           </button>
         </form>
 
-        <div className="text-center pt-4">
+        <div className="text-center pt-4 border-t dark:border-slate-700">
           <p className="text-sm text-slate-500">
             Already have an account?{' '}
             <Link to="/login" className="text-amber-600 font-bold hover:underline">
