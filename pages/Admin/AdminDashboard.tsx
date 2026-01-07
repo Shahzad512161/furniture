@@ -173,7 +173,7 @@ const AdminDashboard: React.FC = () => {
                 <div className="space-y-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
                   <div className="flex gap-4">
                     <div className="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0 font-bold text-xs">1</div>
-                    <p>Go to <strong>Firebase Console</strong> > <strong>Firestore</strong>.</p>
+                    <p>Go to <strong>Firebase Console</strong> <strong>Firestore</strong>.</p>
                   </div>
                   <div className="flex gap-4">
                     <div className="w-6 h-6 rounded-full bg-amber-600 text-white flex items-center justify-center shrink-0 font-bold text-xs">2</div>
