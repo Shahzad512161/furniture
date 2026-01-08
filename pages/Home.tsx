@@ -39,36 +39,42 @@ const Home: React.FC = () => {
   return (
     <div className="space-y-16 pb-16">
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=2000"
-            alt="Hero Furniture"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent" />
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-white space-y-6">
-          <span className="inline-block px-4 py-1 rounded-full bg-amber-600 text-xs font-bold uppercase tracking-widest">
-            UK Exclusive Collection
-          </span>
-          <h1 className="text-5xl md:text-7xl font-extrabold max-w-3xl leading-tight">
-            Redefine Comfort <br /> in Every Corner.
-          </h1>
-          <p className="text-lg md:text-xl text-slate-200 max-w-xl">
-            Experience the fusion of traditional craftsmanship and modern aesthetics. Premium wooden furniture delivered across the UK.
-          </p>
-          <div className="flex flex-wrap gap-4 pt-4">
-            <Link to="/products" className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-lg font-bold transition-all transform hover:scale-105">
-              Shop Collection
-            </Link>
-            <Link to="/about" className="bg-white/10 backdrop-blur hover:bg-white/20 text-white border border-white/30 px-8 py-4 rounded-lg font-bold transition-all">
-              Our Story
-            </Link>
-          </div>
-        </div>
-      </section>
+    <section className="relative h-[80vh] flex items-center overflow-hidden">
+  <div className="absolute inset-0">
+    <img
+      src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=2000"
+      alt="Hero Furniture"
+      className="w-full h-full object-cover"
+    />
+    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-transparent" />
+  </div>
+
+  <div className="relative z-10 max-w-3xl mx-auto px-4 text-white text-center space-y-6">
+    <span className="inline-block px-4 py-1 rounded-full bg-amber-600 text-xs font-bold uppercase tracking-widest mx-auto">
+      UK Exclusive Collection
+    </span>
+
+    <h1 className="text-5xl md:text-7xl font-extrabold leading-tight font-gargle">
+      Redefine Comfort <br /> in Every Corner.
+    </h1>
+
+    <p className="text-lg md:text-xl text-slate-200">
+      Experience the fusion of traditional craftsmanship and modern aesthetics.
+      Premium wooden furniture delivered across the UK.
+    </p>
+
+    <div className="flex justify-center gap-4 pt-4">
+      <Link to="/products" className="bg-amber-600 hover:bg-amber-700 px-8 py-4 rounded-lg font-bold">
+        Shop Collection
+      </Link>
+      <Link to="/about" className="bg-white/10 border border-white/30 px-8 py-4 rounded-lg font-bold">
+        Our Story
+      </Link>
+    </div>
+  </div>
+</section>
+
+
 
       {/* Trust Badges */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
