@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="border-t border-slate-800 pt-8 text-center text-xs">
-          <p>© {new Date().getFullYear()} Oak & Iron Furniture Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Oak & Iron Furniture Ltd. All rights reserved. Created By: <a href="https://www.linkedin.com/in/muhammad-shahzadad-1b236b247/"><strong className="text-md text-amber-600" > Shahzad Diyal</strong></a></p>
         </div>
       </div>
     </footer>
